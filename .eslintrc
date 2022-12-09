@@ -1,0 +1,25 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "env": {
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "project": "./tsconfig.eslint.json",
+    "sourceType": "module"
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended" // Make sure this is always the last configuration in the extends array.
+  ],
+  "rules": {
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "no-console": "error"
+  },
+  "plugins": ["import", "simple-import-sort"],
+  "ignorePatterns": []
+}
