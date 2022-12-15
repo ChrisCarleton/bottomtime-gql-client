@@ -88,6 +88,13 @@ export interface UserManager {
   createUser(options: CreateUserOptions): Promise<User>;
 
   /**
+   * Attempts to retrieve the currently logged-in user.
+   * @returns Returns a Promise to return the {@link User} account if a user is currently logged in; Otherwise
+   * returns `undefined` if the user is currently not logged in.
+   */
+  getCurrentUser(): Promise<User | undefined>;
+
+  /**
    * Attempts to retrieve a user account by its unique ID.
    * @param id The ID of the desired user account.
    * @returns Returns a Promise to return the user account if the ID was successfully found, or `undefined` if it wasn't.
@@ -106,7 +113,7 @@ export interface UserManager {
   /**
    * Performs a search for user accounts matching a set of search criteria.
    * @param options A set of options specifying the search criteria. If omitted, default criteria will be used.
-   * @returns Returns an {@link AsyncGenerator} to iterate over the collection of {@link User}s returned from the database.
+   * @returns Returns a Promise to return an array of {@link User}s matching the search criteria.
    * @throws {ValidationError} Thrown if any of the search criteria are invalid.
    */
   searchUsers(options?: UserSearchCriteria): Promise<User[]>;

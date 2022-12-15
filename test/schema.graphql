@@ -1,0 +1,175 @@
+"""
+Serializes JSON Date types as ISO strings
+"""
+scalar Date
+
+type Mutation {
+  """
+  Change a user's email address.
+  """
+  usersChangeEmail(newEmail: String!, userId: ID!): Boolean!
+
+  """
+  Allows a user to change their password.
+  """
+  usersChangePassword(newPassword: String!, oldPassword: String!): Boolean!
+
+  """
+  Changes a user's role.
+  """
+  usersChangeRole(newRole: Role!, userId: ID!): Boolean!
+
+  """
+  Change a user's username.
+  """
+  usersChangeUsername(newUsername: String!, userId: ID!): Boolean!
+
+  """
+  Creates a new user account.
+  """
+  usersCreate(params: UserCreateParams!): UserEntity!
+
+  """
+  Forcefully, reset a users password. (Admins only.)
+  """
+  usersForceResetPassword(newPassword: String!, userId: ID!): Boolean!
+
+  """
+  Locks (suspends) a user account.
+  """
+  usersLockAccount(userId: ID!): Boolean!
+
+  """
+  Attempts to authenticate a user. If successful, will return the user account info and the session cookie will be updated
+  to reflect the user's identity.
+  """
+  usersLogin(password: String!, usernameOrEmail: String!): UserEntity
+
+  """
+  Logs out the currently logged-in user.
+  """
+  usersLogout: Boolean!
+
+  """
+  Requests an email verification token be sent out to the indicated email address.
+  """
+  usersRequestEmailVerification(email: String!): Boolean!
+
+  """
+  Requests a password reset email be sent out to the indicated user.
+  """
+  usersRequestPasswordReset(usernameOrEmail: String!): Boolean!
+
+  """
+  Attempts to reset a user's password using a reset token.
+  """
+  usersResetPassword(
+    newPassword: String!
+    resetToken: String!
+    usernameOrEmail: String!
+  ): Boolean!
+
+  """
+  Unlocks a previously suspended account.
+  """
+  usersUnlockAccount(userId: ID!): Boolean!
+
+  """
+  Attempts to verify an email address given a verification token.
+  """
+  usersVerifyEmailAddress(email: String!, token: String!): Boolean!
+}
+
+type Query {
+  """
+  Attempts to retrieve a user account by its ID.
+  """
+  usersGetById(id: ID!): UserEntity
+
+  """
+  Attempts to get a user account by its username or email address.
+  """
+  usersGetByUsernameOrEmail(usernameOrEmail: String!): UserEntity
+
+  """
+  Get the currently logged-in user.
+  """
+  usersGetCurrent: UserEntity
+
+  """
+  Performs a search for user accounts.
+  """
+  usersSearch(params: UserSearchParams): [UserEntity!]!
+}
+
+enum Role {
+  Admin
+  User
+}
+
+input UserCreateParams {
+  email: String
+  password: String
+  role: Role
+  username: String!
+}
+
+"""
+Represents a user account
+"""
+type UserEntity {
+  """
+  The user's email address.
+  """
+  email: String
+
+  """
+  Whether or not the user's email address has been verified.
+  """
+  emailVerified: Boolean!
+
+  """
+  Whether or not the user account has a password set.
+  """
+  hasPassword: Boolean!
+
+  """
+  The user account's unique ID. This will never change.
+  """
+  id: ID!
+
+  """
+  Whether or not the user account is currently suspended (locked out)
+  """
+  isLockedOut: Boolean!
+
+  """
+  An ISO-formatted date and time indicating when the user last logged indicating when the user last logged indicating
+  """
+  lastLogin: Date
+
+  """
+  An ISO-formatted date and time indicating when the account was first created.
+  """
+  memberSince: Date!
+
+  """
+  The user's role. Currently, only "user" and "admin" are supported
+  """
+  role: Role!
+
+  """
+  The user's unique Username. This can be changed by the user. Use id if you need a more permanent identifier.
+  """
+  username: String!
+}
+
+input UserSearchParams {
+  limit: Int
+  locked: Boolean
+  query: String
+  roles: [Role!]
+  skip: Int
+  sortBy: String
+  sortOrder: String
+}

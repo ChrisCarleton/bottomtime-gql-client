@@ -4,14 +4,15 @@ const config: CodegenConfig = {
   schema: 'http://localhost:5501/api',
   generates: {
     './src/graphql/types.ts': {
-      plugins: ['typescript'],
+      plugins: ['typescript', 'typescript-resolvers', './schema-clone.js'],
       config: {
         scalars: {
-          Date: 'Date',
+          Date: 'string',
         },
         enumValues: {
           Role: '../users#UserRole',
         },
+        typedefsOutFile: './test/schema.graphql',
       },
     },
   },

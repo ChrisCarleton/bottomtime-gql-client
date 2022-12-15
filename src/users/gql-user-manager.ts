@@ -1,4 +1,4 @@
-import { gql, TypedDocumentNode } from '@apollo/client';
+import { gql } from '@apollo/client/core';
 import {
   InputMaybe,
   Maybe,
@@ -81,9 +81,13 @@ export class GqlUserManager implements UserManager {
     return new GqlUser(result!);
   }
 
+  async getCurrentUser(): Promise<User | undefined> {
+    return undefined;
+  }
+
   async getUserById(id: string): Promise<User | undefined> {
     const result = await this.client.query<
-      Maybe<UserEntity>,
+      { usersGetById: Maybe<UserEntity> },
       QueryUsersGetByIdArgs
     >(
       gql`
@@ -103,7 +107,7 @@ export class GqlUserManager implements UserManager {
       `,
       { id },
     );
-    return result ? new GqlUser(result) : undefined;
+    return result.usersGetById ? new GqlUser(result.usersGetById) : undefined;
   }
 
   async getUserByUsernameOrEmail(

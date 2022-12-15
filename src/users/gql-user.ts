@@ -13,11 +13,11 @@ export class GqlUser implements User {
   }
 
   get lastLogin(): Date | undefined {
-    return this.data.lastLogin ?? undefined;
+    return this.data.lastLogin ? new Date(this.data.lastLogin) : undefined;
   }
 
   get memberSince(): Date {
-    return this.data.memberSince;
+    return new Date(this.data.memberSince);
   }
 
   get email(): string | undefined {

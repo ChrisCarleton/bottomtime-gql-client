@@ -1,10 +1,10 @@
 /** An enumeration of recognized user roles. */
 export enum UserRole {
   /** A regular user. Will cover the vast majority of users. */
-  User = 'user',
+  User = 'User',
 
   /** Admin users who can manage the application and user accounts. */
-  Admin = 'admin',
+  Admin = 'Admin',
 }
 
 /** An interface representing a User. */
