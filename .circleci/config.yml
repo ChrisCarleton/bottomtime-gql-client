@@ -38,9 +38,37 @@ jobs:
       - persist_to_workspace:
           root: ./
           paths:
-            - ./
+            - ./dist/
+            - ./package.json
+            - ./README.md
+            - ./yarn.lock
+
+  publish:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - node/install:
+          install-yarn: true
+          node-version: '18'
+      - attach_workspace:
+          at: ./
+      - run:
+          name: publish
+          command: yarn publish --new-version $CIRCLE_TAG
 
 workflows:
   test-only:
     jobs:
       - validate
+
+  test-and-publish:
+    jobs:
+      - validate:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/ # Match version number in standard format: <major>.<minor>.<patch>
+      - publish:
+          requires:
+            - validate
