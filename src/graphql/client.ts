@@ -45,7 +45,7 @@ export class GraphQLClient {
     });
   }
 
-  async query<TReturn, TArgs>(
+  async query<TReturn, TArgs = any>(
     query: TypedDocumentNode<TReturn, TArgs>,
     variables?: TArgs,
   ): Promise<TReturn> {

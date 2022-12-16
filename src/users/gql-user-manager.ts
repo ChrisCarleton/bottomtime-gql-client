@@ -82,7 +82,28 @@ export class GqlUserManager implements UserManager {
   }
 
   async getCurrentUser(): Promise<User | undefined> {
-    return undefined;
+    const result = await this.client.query<{
+      usersGetCurrent: Maybe<UserEntity>;
+    }>(
+      gql`
+        query {
+          usersGetCurrent {
+            email
+            emailVerified
+            hasPassword
+            id
+            isLockedOut
+            lastLogin
+            memberSince
+            role
+            username
+          }
+        }
+      `,
+    );
+    return result.usersGetCurrent
+      ? new GqlUser(result.usersGetCurrent)
+      : undefined;
   }
 
   async getUserById(id: string): Promise<User | undefined> {
