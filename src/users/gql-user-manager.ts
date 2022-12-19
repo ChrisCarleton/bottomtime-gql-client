@@ -10,6 +10,7 @@ import {
   UserEntity,
 } from '../graphql';
 import { GraphQLClient } from '../graphql/client';
+import { UserAllFields } from './common';
 import { GqlUser } from './gql-user';
 import { User } from './user';
 import {
@@ -32,17 +33,10 @@ export class GqlUserManager implements UserManager {
       gql`
         mutation authenticate($usernameOrEmail: String!, $password: String!) {
           usersLogin(usernameOrEmail: $usernameOrEmail, password: $password) {
-            email
-            emailVerified
-            hasPassword
-            id
-            isLockedOut
-            lastLogin
-            memberSince
-            role
-            username
+            ...UserAllFields
           }
         }
+        ${UserAllFields}
       `,
       { usernameOrEmail, password },
     );
@@ -57,17 +51,10 @@ export class GqlUserManager implements UserManager {
       gql`
         mutation ($params: UserCreateParams!) {
           usersCreate(params: $params) {
-            email
-            emailVerified
-            hasPassword
-            id
-            isLockedOut
-            lastLogin
-            memberSince
-            role
-            username
+            ...UserAllFields
           }
         }
+        ${UserAllFields}
       `,
       {
         params: {
@@ -88,17 +75,10 @@ export class GqlUserManager implements UserManager {
       gql`
         query {
           usersGetCurrent {
-            email
-            emailVerified
-            hasPassword
-            id
-            isLockedOut
-            lastLogin
-            memberSince
-            role
-            username
+            ...UserAllFields
           }
         }
+        ${UserAllFields}
       `,
     );
     return result.usersGetCurrent
@@ -114,17 +94,10 @@ export class GqlUserManager implements UserManager {
       gql`
         query ($id: ID!) {
           usersGetById(id: $id) {
-            email
-            emailVerified
-            hasPassword
-            id
-            isLockedOut
-            lastLogin
-            memberSince
-            role
-            username
+            ...UserAllFields
           }
         }
+        ${UserAllFields}
       `,
       { id },
     );
@@ -141,17 +114,10 @@ export class GqlUserManager implements UserManager {
       gql`
         query ($id: ID!) {
           usersGetByUsernameOrEmail(id: $id) {
-            email
-            emailVerified
-            hasPassword
-            id
-            isLockedOut
-            lastLogin
-            memberSince
-            role
-            username
+            ...UserAllFields
           }
         }
+        ${UserAllFields}
       `,
       { usernameOrEmail },
     );
@@ -166,17 +132,10 @@ export class GqlUserManager implements UserManager {
       gql`
         query ($params: UserSearchParams) {
           usersSearch(params: $params) {
-            email
-            emailVerified
-            hasPassword
-            id
-            isLockedOut
-            lastLogin
-            memberSince
-            role
-            username
+            ...UserAllFields
           }
         }
+        ${UserAllFields}
       `,
       {
         params: {
