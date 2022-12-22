@@ -26,8 +26,12 @@ describe('Users Manager', () => {
 
   afterEach((done) => {
     if (testServer) {
-      testServer.close(done);
-      testServer = undefined;
+      testServer.close(() => {
+        testServer = undefined;
+        done();
+      });
+    } else {
+      done();
     }
   });
 
