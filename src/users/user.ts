@@ -128,4 +128,10 @@ export interface User {
    * @returns Returns a Promise to indicate when the operation has completed.
    */
   changeRole(newRole: UserRole): Promise<void>;
+
+  /**
+   * Exports the user entity data as a simple JSON representation.
+   * @returns Returns an object representing the properties of this user entity.
+   */
+  toJSON(): Record<string, unknown>;
 }

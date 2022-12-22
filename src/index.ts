@@ -2,6 +2,8 @@ import { GraphQLClient } from './graphql/client';
 import { UserManager } from './users';
 import { GqlUserManager } from './users/gql-user-manager';
 
+export * from './errors';
+
 export interface BottomTime {
   users: UserManager;
 }

@@ -27,7 +27,7 @@ export class GqlUserManager implements UserManager {
     password: string,
   ): Promise<User | undefined> {
     const result = await this.client.mutate<
-      Maybe<UserEntity>,
+      { usersLogin: Maybe<UserEntity> },
       MutationUsersLoginArgs
     >(
       gql`
@@ -40,12 +40,14 @@ export class GqlUserManager implements UserManager {
       `,
       { usernameOrEmail, password },
     );
-    return result ? new GqlUser(result) : undefined;
+    return result.usersLogin
+      ? new GqlUser(this.client, result.usersLogin)
+      : undefined;
   }
 
   async createUser(options: CreateUserOptions): Promise<User> {
     const result = await this.client.mutate<
-      UserEntity,
+      { usersCreate: UserEntity },
       MutationUsersCreateArgs
     >(
       gql`
@@ -65,7 +67,7 @@ export class GqlUserManager implements UserManager {
         },
       },
     );
-    return new GqlUser(result!);
+    return new GqlUser(this.client, result.usersCreate);
   }
 
   async getCurrentUser(): Promise<User | undefined> {
@@ -82,7 +84,7 @@ export class GqlUserManager implements UserManager {
       `,
     );
     return result.usersGetCurrent
-      ? new GqlUser(result.usersGetCurrent)
+      ? new GqlUser(this.client, result.usersGetCurrent)
       : undefined;
   }
 
@@ -101,19 +103,21 @@ export class GqlUserManager implements UserManager {
       `,
       { id },
     );
-    return result.usersGetById ? new GqlUser(result.usersGetById) : undefined;
+    return result.usersGetById
+      ? new GqlUser(this.client, result.usersGetById)
+      : undefined;
   }
 
   async getUserByUsernameOrEmail(
     usernameOrEmail: string,
   ): Promise<User | undefined> {
     const result = await this.client.query<
-      Maybe<UserEntity>,
+      { usersGetByUsernameOrEmail: Maybe<UserEntity> },
       QueryUsersGetByUsernameOrEmailArgs
     >(
       gql`
-        query ($id: ID!) {
-          usersGetByUsernameOrEmail(id: $id) {
+        query ($usernameOrEmail: String!) {
+          usersGetByUsernameOrEmail(usernameOrEmail: $usernameOrEmail) {
             ...UserAllFields
           }
         }
@@ -121,13 +125,15 @@ export class GqlUserManager implements UserManager {
       `,
       { usernameOrEmail },
     );
-    return result ? new GqlUser(result) : undefined;
+    return result.usersGetByUsernameOrEmail
+      ? new GqlUser(this.client, result.usersGetByUsernameOrEmail)
+      : undefined;
   }
 
   async searchUsers(options?: UserSearchCriteria | undefined): Promise<User[]> {
     const results = await this.client.query<
-      UserEntity[],
-      InputMaybe<QueryUsersSearchArgs>
+      { usersSearch: UserEntity[] },
+      QueryUsersSearchArgs
     >(
       gql`
         query ($params: UserSearchParams) {
@@ -151,6 +157,8 @@ export class GqlUserManager implements UserManager {
         },
       },
     );
-    return results.map((result) => new GqlUser(result));
+    return results.usersSearch.map(
+      (result) => new GqlUser(this.client, result),
+    );
   }
 }

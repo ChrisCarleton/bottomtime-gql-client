@@ -1,5 +1,6 @@
 import {
   ApolloClient,
+  ApolloError,
   from,
   HttpLink,
   InMemoryCache,
@@ -7,22 +8,18 @@ import {
   TypedDocumentNode,
 } from '@apollo/client/core';
 import fetch from 'cross-fetch';
-import { GraphQLError } from 'graphql';
-import { handleError } from './error-handler';
-import { onError } from '@apollo/client/link/error';
+import { ServerError } from '../errors';
+import { handleErrors } from './error-handler';
 
 export class GraphQLClient {
   private readonly client: ApolloClient<NormalizedCacheObject>;
 
   constructor(uri: string) {
-    const link = from([
-      onError(handleError),
-      new HttpLink({
-        uri,
-        credentials: 'include',
-        fetch,
-      }),
-    ]);
+    const link = new HttpLink({
+      uri,
+      credentials: 'include',
+      fetch,
+    });
 
     this.client = new ApolloClient({
       link,
@@ -49,28 +46,44 @@ export class GraphQLClient {
     query: TypedDocumentNode<TReturn, TArgs>,
     variables?: TArgs,
   ): Promise<TReturn> {
-    const result = await this.client.query<TReturn, TArgs>({
-      query,
-      variables,
-    });
+    try {
+      const result = await this.client.query<TReturn, TArgs>({
+        query,
+        variables,
+      });
 
-    return result.data;
+      return result.data;
+    } catch (error) {
+      if (error instanceof ApolloError) {
+        handleErrors(error.graphQLErrors, error.networkError);
+      }
+
+      throw new ServerError();
+    }
   }
 
   async mutate<TReturn, TArgs>(
     mutation: TypedDocumentNode<TReturn, TArgs>,
     variables?: TArgs,
   ): Promise<TReturn> {
-    const result = await this.client.mutate<TReturn, TArgs>({
-      mutation,
-      variables,
-    });
+    try {
+      const result = await this.client.mutate<TReturn, TArgs>({
+        mutation,
+        variables,
+      });
 
-    if (!result.data) {
-      // TODO: Make a better exception for this...
-      throw new Error('Wat?');
+      if (!result.data) {
+        // TODO: Make a better exception for this...
+        throw new Error('Wat?');
+      }
+
+      return result.data;
+    } catch (error) {
+      if (error instanceof ApolloError) {
+        handleErrors(error.graphQLErrors, error.networkError);
+      }
+
+      throw new ServerError();
     }
-
-    return result.data;
   }
 }
