@@ -1,13 +1,10 @@
-import { createServer, Server } from 'http';
-import { createYoga } from 'graphql-yoga';
+import { Server } from 'http';
 import {
   ConflictError,
   createBottomTimeClient,
   ValidationError,
 } from '../../src';
-import { makeExecutableSchema } from '@graphql-tools/schema';
-import { typeDefs } from '../schema';
-import { Resolvers, UserEntity } from '../../src/graphql/types';
+import { UserEntity } from '../../src/graphql/types';
 import { fakeUser } from '../fixtures/fake-user';
 import { faker } from '@faker-js/faker';
 import { TestServerUrl } from '../constants';
@@ -20,25 +17,9 @@ import {
 } from '../../src/users';
 import { createGraphQLError } from '../graphql-error';
 import { GqlErrorCode } from '../../src/users/common';
+import { createGqlServer } from '../create-gql-server';
 
 const Users: UserEntity[] = [fakeUser(), fakeUser(), fakeUser()];
-
-function createGqlServer(resolvers: Resolvers): Server {
-  const schema = makeExecutableSchema({ typeDefs, resolvers });
-  const graphqlServer = createYoga({
-    schema,
-  });
-
-  return createServer(graphqlServer);
-}
-
-function startServer(server: Server): Promise<void> {
-  return new Promise((resolve) => {
-    server.listen({ port: 4000 }, () => {
-      resolve();
-    });
-  });
-}
 
 describe('Users Manager', () => {
   let testServer: Server | undefined;
@@ -54,12 +35,11 @@ describe('Users Manager', () => {
     it('Will retrieve a user by ID', async () => {
       const spy = jest.fn().mockResolvedValue(Users[0]);
       const id = faker.database.mongodbObjectId();
-      testServer = createGqlServer({
+      testServer = await createGqlServer({
         Query: {
           usersGetById: spy,
         },
       });
-      await startServer(testServer);
       const client = createBottomTimeClient(TestServerUrl);
 
       const expected = Users[0];
@@ -73,12 +53,11 @@ describe('Users Manager', () => {
     it('Will return undefined if user ID cannot be found', async () => {
       const spy = jest.fn().mockResolvedValue(null);
       const id = faker.database.mongodbObjectId();
-      testServer = createGqlServer({
+      testServer = await createGqlServer({
         Query: {
           usersGetById: spy,
         },
       });
-      await startServer(testServer);
       const client = createBottomTimeClient(TestServerUrl);
 
       const actual = await client.users.getUserById(id);
@@ -92,12 +71,11 @@ describe('Users Manager', () => {
   describe('Get Current User', () => {
     it('Will return a user if logged in', async () => {
       const spy = jest.fn().mockResolvedValue(Users[0]);
-      testServer = createGqlServer({
+      testServer = await createGqlServer({
         Query: {
           usersGetCurrent: spy,
         },
       });
-      await startServer(testServer);
       const client = createBottomTimeClient(TestServerUrl);
 
       const expected = Users[0];
@@ -108,12 +86,11 @@ describe('Users Manager', () => {
 
     it('Will return undefined if user is not logged in', async () => {
       const spy = jest.fn().mockResolvedValue(null);
-      testServer = createGqlServer({
+      testServer = await createGqlServer({
         Query: {
           usersGetCurrent: spy,
         },
       });
-      await startServer(testServer);
       const client = createBottomTimeClient(TestServerUrl);
 
       const actual = await client.users.getCurrentUser();
@@ -125,12 +102,11 @@ describe('Users Manager', () => {
   describe('Get User By Username Or Email', () => {
     it('Will retrieve user', async () => {
       const spy = jest.fn().mockResolvedValue(Users[2]);
-      testServer = createGqlServer({
+      testServer = await createGqlServer({
         Query: {
           usersGetByUsernameOrEmail: spy,
         },
       });
-      await startServer(testServer);
       const client = createBottomTimeClient(TestServerUrl);
 
       const expected = Users[2];
@@ -146,12 +122,11 @@ describe('Users Manager', () => {
     it('Will return undefined if user is not found', async () => {
       const email = faker.internet.email();
       const spy = jest.fn().mockResolvedValue(undefined);
-      testServer = createGqlServer({
+      testServer = await createGqlServer({
         Query: {
           usersGetByUsernameOrEmail: spy,
         },
       });
-      await startServer(testServer);
       const client = createBottomTimeClient(TestServerUrl);
 
       const actual = await client.users.getUserByUsernameOrEmail(email);
@@ -167,12 +142,11 @@ describe('Users Manager', () => {
       const username = faker.internet.userName();
       const password = faker.internet.password();
       const spy = jest.fn().mockResolvedValue(Users[1]);
-      testServer = createGqlServer({
+      testServer = await createGqlServer({
         Mutation: {
           usersLogin: spy,
         },
       });
-      await startServer(testServer);
       const client = createBottomTimeClient(TestServerUrl);
 
       const expected = Users[1];
@@ -187,12 +161,11 @@ describe('Users Manager', () => {
       const username = faker.internet.userName();
       const password = faker.internet.password();
       const spy = jest.fn().mockResolvedValue(undefined);
-      testServer = createGqlServer({
+      testServer = await createGqlServer({
         Mutation: {
           usersLogin: spy,
         },
       });
-      await startServer(testServer);
       const client = createBottomTimeClient(TestServerUrl);
 
       const actual = await client.users.authenticateUser(username, password);
@@ -215,12 +188,11 @@ describe('Users Manager', () => {
         sortOrder: SortOrder.Ascending,
       };
       const spy = jest.fn().mockResolvedValue(Users);
-      testServer = createGqlServer({
+      testServer = await createGqlServer({
         Query: {
           usersSearch: spy,
         },
       });
-      await startServer(testServer);
       const client = createBottomTimeClient(TestServerUrl);
 
       const expected = Users;
@@ -236,12 +208,11 @@ describe('Users Manager', () => {
       const spy = jest
         .fn()
         .mockRejectedValue(createGraphQLError(GqlErrorCode.ValidationFailed));
-      testServer = createGqlServer({
+      testServer = await createGqlServer({
         Query: {
           usersSearch: spy,
         },
       });
-      await startServer(testServer);
       const client = createBottomTimeClient(TestServerUrl);
 
       await expect(
@@ -262,12 +233,11 @@ describe('Users Manager', () => {
         role: UserRole.User,
       };
       const spy = jest.fn().mockResolvedValue(Users[0]);
-      testServer = createGqlServer({
+      testServer = await createGqlServer({
         Mutation: {
           usersCreate: spy,
         },
       });
-      await startServer(testServer);
       const client = createBottomTimeClient(TestServerUrl);
 
       const expected = Users[0];
@@ -288,12 +258,11 @@ describe('Users Manager', () => {
       const spy = jest
         .fn()
         .mockRejectedValue(createGraphQLError(GqlErrorCode.ValidationFailed));
-      testServer = createGqlServer({
+      testServer = await createGqlServer({
         Mutation: {
           usersCreate: spy,
         },
       });
-      await startServer(testServer);
       const client = createBottomTimeClient(TestServerUrl);
 
       await expect(client.users.createUser(options)).rejects.toThrowError(
@@ -314,12 +283,11 @@ describe('Users Manager', () => {
       const spy = jest
         .fn()
         .mockRejectedValue(createGraphQLError(GqlErrorCode.Conflict));
-      testServer = createGqlServer({
+      testServer = await createGqlServer({
         Mutation: {
           usersCreate: spy,
         },
       });
-      await startServer(testServer);
       const client = createBottomTimeClient(TestServerUrl);
 
       await expect(client.users.createUser(options)).rejects.toThrowError(
